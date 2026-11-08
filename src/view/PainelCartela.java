@@ -15,10 +15,13 @@ import java.util.Map;
 
 import javax.swing.JPanel;
 
+import controller.Controller;
+import controller.ObservadoIF;
+import controller.ObservadorIF;
 import model.ModelFacade;
 
 /** Desenha a cartela do jogador (Tolui) com suas melhorias e, abaixo, tributos, tesouros, votos e yurts. */
-class PainelCartela extends JPanel {
+class PainelCartela extends JPanel implements ObservadorIF {
 	private static final int LARGURA = 900;
 	private static final int ALTURA_STATUS = 120;
 	private static final int TAMANHO_FICHA = 40;
@@ -69,6 +72,14 @@ class PainelCartela extends JPanel {
 			cartela = Imagens.reduzir(original, LARGURA, (int) Math.round(original.getHeight() * escala));
 		}
 		setPreferredSize(new Dimension(LARGURA, cartela.getHeight() + ALTURA_STATUS));
+		Controller.getInstancia().registra(this);
+	}
+
+	/** Redesenha a cartela a cada mudança da partida. */
+	@Override
+	public void notify(ObservadoIF o) {
+		if (JanelaJogo.mudouPartida(o.get(Controller.EVENTO)))
+			repaint();
 	}
 
 	/** Imagem da melhoria pelo identificador do Model (ex.: "CAVALOS-AMARELA" -> melhorias/CAV-A.jpg). */

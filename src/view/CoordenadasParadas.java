@@ -3,6 +3,7 @@ package view;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.util.HashMap;
+import java.util.Set;
 
 import model.ModelFacade;
 
@@ -64,6 +65,11 @@ class CoordenadasParadas {
 
 	Point getPonto(String nome) {
 		return pontos.get(nome);
+	}
+
+	/** Nomes de todas as paradas (inclusive Karakorum). */
+	Set<String> getNomes() {
+		return pontos.keySet();
 	}
 
 	/** Parada sob o ponto (em coordenadas da imagem original), ou null se não houver. */

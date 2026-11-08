@@ -22,6 +22,10 @@ public class Controller implements ObservadoIF {
 	public static final int TURNO_ENCERRADO = 3;
 	public static final int CARTELA_ALTERNADA = 4;
 	public static final int CARTAS_ALTERNADA = 5;
+	public static final int KHAN_MOVIDO = 6;
+	public static final int TRIBUTO_PEGO = 7;
+	public static final int YURT_CONSTRUIDO = 8;
+	public static final int TESOURO_TOMADO = 9;
 
 	private static Controller instancia;
 
@@ -99,6 +103,34 @@ public class Controller implements ObservadoIF {
 		if (!modelo.mover(parada))
 			return false;
 		notificar(PEAO_MOVIDO, indiceDaVez(), 0);
+		return true;
+	}
+
+	public boolean moverKhan(String destino) {
+		if (!modelo.moverKhan(destino))
+			return false;
+		notificar(KHAN_MOVIDO, indiceDaVez(), 0);
+		return true;
+	}
+
+	public boolean pegarTributo(String provincia) {
+		if (!modelo.pegarTributo(provincia))
+			return false;
+		notificar(TRIBUTO_PEGO, indiceDaVez(), 0);
+		return true;
+	}
+
+	public boolean construirYurt(String parada) {
+		if (!modelo.construirYurt(parada))
+			return false;
+		notificar(YURT_CONSTRUIDO, indiceDaVez(), 0);
+		return true;
+	}
+
+	public boolean atacarCidade(String cidade, String tesouro) {
+		if (!modelo.atacarCidade(cidade, tesouro))
+			return false;
+		notificar(TESOURO_TOMADO, indiceDaVez(), 0);
 		return true;
 	}
 

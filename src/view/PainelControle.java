@@ -16,10 +16,13 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
+import controller.Controller;
+import controller.ObservadoIF;
+import controller.ObservadorIF;
 import model.ModelFacade;
 
 /** Painel lateral: jogador da vez, movimentos restantes, botões das colunas e encerrar turno. */
-class PainelControle extends JPanel {
+class PainelControle extends JPanel implements ObservadorIF {
 	private static final int LARGURA = 260;
 	private static final HashMap<String, Color> CORES_JOGADORES = new HashMap<>();
 	private static final HashMap<String, Color> CORES_COLUNAS = new HashMap<>();
@@ -36,15 +39,16 @@ class PainelControle extends JPanel {
 		CORES_COLUNAS.put("BRANCA", Color.WHITE);
 	}
 
-	private final JanelaJogo janela;
+	private final Controller controller = Controller.getInstancia();
 	private final ModelFacade modelo = ModelFacade.getInstancia();
 	private final JLabel vez = new JLabel("", SwingConstants.CENTER);
 	private final JLabel movimentos = new JLabel("", SwingConstants.CENTER);
+	private final JLabel punhos = new JLabel("", SwingConstants.CENTER);
+	private final JLabel khan = new JLabel("", SwingConstants.CENTER);
 	private final LinkedHashMap<String, JButton> botoesColunas = new LinkedHashMap<>();
 	private final JButton encerrar = new JButton("Encerrar turno");
 
-	PainelControle(JanelaJogo janela) {
-		this.janela = janela;
+	PainelControle() {
 		setPreferredSize(new Dimension(LARGURA, 0));
 		setBorder(BorderFactory.createEmptyBorder(16, 16, 16, 16));
 		setLayout(new BorderLayout());
@@ -54,6 +58,8 @@ class PainelControle extends JPanel {
 		vez.setFont(vez.getFont().deriveFont(Font.BOLD, 18f));
 		conteudo.add(vez);
 		conteudo.add(movimentos);
+		conteudo.add(punhos);
+		conteudo.add(khan);
 		conteudo.add(new JLabel("Ativar coluna:"));
 		for (String coluna : modelo.getColunas()) {
 			JButton botao = new JButton(coluna);
@@ -74,6 +80,14 @@ class PainelControle extends JPanel {
 		}
 		add(conteudo, BorderLayout.NORTH);
 		atualizar();
+		controller.registra(this);
+	}
+
+	/** Atualiza o painel a cada mudança da partida. */
+	@Override
+	public void notify(ObservadoIF o) {
+		if (JanelaJogo.mudouPartida(o.get(Controller.EVENTO)))
+			atualizar();
 	}
 
 	/** Mostra a cor do jogador da vez e habilita só as ações que o Model permite agora. */
@@ -83,9 +97,22 @@ class PainelControle extends JPanel {
 		vez.setBackground(CORES_JOGADORES.get(cor));
 		vez.setForeground(corDoTexto(cor));
 		movimentos.setText("Movimentos: " + modelo.getMovimentos());
+		punhos.setText("Punhos: " + modelo.getPunhos());
+		if (modelo.isKhanPendente()) {
+			khan.setText("Khan: mova o Khan");
+			khan.setForeground(Color.RED);
+		} else {
+			khan.setText("Khan: —");
+			khan.setForeground(Color.BLACK);
+		}
 		for (String coluna : botoesColunas.keySet())
 			botoesColunas.get(coluna).setEnabled(modelo.podeAtivarColuna(coluna));
 		encerrar.setEnabled(modelo.podeEncerrarTurno());
+	}
+
+	/** Cor de um jogador na interface (painel, botões e anel dos yurts). */
+	static Color corDoJogador(String cor) {
+		return CORES_JOGADORES.get(cor);
 	}
 
 	private static Color corDoTexto(String cor) {
@@ -101,16 +128,14 @@ class PainelControle extends JPanel {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			if (modelo.ativarColuna(coluna))
-				janela.atualizar();
+			controller.ativarColuna(coluna);
 		}
 	}
 
 	private class EncerrarTurno implements ActionListener {
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			if (modelo.encerrarTurno())
-				janela.atualizar();
+			controller.encerrarTurno();
 		}
 	}
 
@@ -123,7 +148,7 @@ class PainelControle extends JPanel {
 
 		@Override
 		public void actionPerformed(ActionEvent e) {
-			janela.alternarCartela(cor);
+			controller.alternarCartela(cor);
 		}
 	}
 }
